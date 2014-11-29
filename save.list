@@ -1,0 +1,6 @@
+# This file constains each dirs or files that will be saved in the backup archive.
+# You can comment this file with '#' or ';'.
+;/root/.bashrc
+;/home/user/
+;/root/
+/var/log/
