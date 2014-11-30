@@ -133,6 +133,9 @@ def _print(text):
 
 
 
+if sys.argv[0] != "ezbackup.py":
+	os.chdir(os.path.dirname(sys.argv[0]))
+
 # Some constants
 MAIL_ALWAYS = 2
 MAIL_FAILS  = 1
