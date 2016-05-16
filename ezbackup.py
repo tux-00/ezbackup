@@ -115,9 +115,8 @@ def get_time(_seconds):
 
 def quit_ezbackup(exit_code=0):
     # Remove archive if exist
-    if "tarname" in globals():
-        if os.path.isfile(tarname):
-            os.remove(tarname)
+    if "tarname" in globals() and os.path.isfile(tarname) and LOCAL_SAVE_ENABLED is False:
+        os.remove(tarname)
 
     # Quit FTP connection
     if "ftp" in globals() and "HOST" in globals():
@@ -127,6 +126,7 @@ def quit_ezbackup(exit_code=0):
         except:
             pass
 
+    # Send email if configured
     if "MAIL_STATE" in globals() and "MAIL_FAILS" in globals() and "MAIL_ALWAYS" in globals():
         if exit_code == ERROR_CODE and (MAIL_STATE == MAIL_FAILS or MAIL_STATE == MAIL_ALWAYS):
             mail(MAIL_SENDER, MAIL_RECEIVERS, "EZBackup Fail", outbuffer)
@@ -178,11 +178,13 @@ config.read(CONF_FILE)
 
 # Load constants from the ezbackup configuration file
 try:
+    FTP_ENABLED = config.getboolean('FTP', 'ftp_enabled')
     HOST = config.get('FTP', 'host')
     PORT = config.getint('FTP', 'port')
     LOGIN = config.get('FTP', 'login')
     PASSWD = config.get('FTP', 'passwd')
     SAVE_DIR = config.get('FTP', 'save_dir')
+    LOCAL_SAVE_ENABLED = config.getboolean('Options', 'local_save_enabled')
     COMPRESS = config.get('Options', 'compress')
     BACKUP_NAME = config.get('Options', 'backup_name')
     SAVE_LIST = config.get('Options', 'save_list')
@@ -214,7 +216,8 @@ except IOError as e:
     _print("Error opening {0}: {1}.".format(SAVE_LIST, e.strerror))
     quit_ezbackup(ERROR_CODE)
 
-ftp = ftp.FTP()
+if FTP_ENABLED:
+    ftp = ftp.FTP()
 nb_files = 0
 disk_size = 0
 tar_size = 0
@@ -225,7 +228,8 @@ for path in savelist.readlines():
     # If line different from a comment or an empty line
     if path != "\n" and path[0] != ';' and path[0] != '#':
         if something_saved is False:
-            ftp_connect(HOST, PORT, LOGIN, PASSWD, SAVE_DIR)
+            if FTP_ENABLED:
+                ftp_connect(HOST, PORT, LOGIN, PASSWD, SAVE_DIR)
             something_saved = True
         path = path.replace('\n', '')
         if os.path.isdir(path):
@@ -237,15 +241,16 @@ for path in savelist.readlines():
 savelist.close()
 tar.close()
 
-# If there is something to saved
+# If there is something to save
 if something_saved:
     with open(tarname, 'rb') as savedtar:
-        try:
-            ftp.storbinary('STOR ' + tarname, savedtar)
-        except Exception as e:
-            _print("Error copying {0} to FTP server: {1}.".format(
-                tarname, e.message))
-            quit_ezbackup(ERROR_CODE)
+        if FTP_ENABLED:
+            try:
+                ftp.storbinary('STOR ' + tarname, savedtar)
+            except Exception as e:
+                _print("Error copying {0} to FTP server: {1}.".format(
+                    tarname, e.message))
+                quit_ezbackup(ERROR_CODE)
 
         exec_time = time() - start_time
         tar_size = os.path.getsize(tarname)
