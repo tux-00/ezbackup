@@ -55,15 +55,15 @@ def ftp_connect(host, port, login, passwd, dir):
         _print("Login error: {0}.".format(e.message))
         quit_ezbackup(ERROR_CODE)
     try:
-        ftp.cwd(SAVE_DIR)
+        ftp.cwd(FTP_SAVE_DIR)
     except Exception as e:
         _print("Error changing FTP directory to {0}: {1}.".format(
-            SAVE_DIR, e.message))
+            FTP_SAVE_DIR, e.message))
         ftp_quit()
         quit_ezbackup(ERROR_CODE)
 
     _print("Logged as " + login + " on " + host + ":" + str(port))
-    _print("Changed dir to " + SAVE_DIR)
+    _print("Changed dir to " + FTP_SAVE_DIR)
     _print("\nTYPE\tPATH")
 
     return True
@@ -114,9 +114,18 @@ def get_time(_seconds):
 
 
 def quit_ezbackup(exit_code=0):
+    global LOCAL_SAVE_DIR
+
     # Remove archive if exist
     if "tarname" in globals() and os.path.isfile(tarname) and LOCAL_SAVE_ENABLED is False:
         os.remove(tarname)
+    elif LOCAL_SAVE_ENABLED and LOCAL_SAVE_DIR != "." and LOCAL_SAVE_DIR != "./" and os.path.exists(LOCAL_SAVE_DIR):
+        if LOCAL_SAVE_DIR[-1:] != "/":
+            LOCAL_SAVE_DIR = LOCAL_SAVE_DIR + "/"
+        try:
+            os.rename(tarname, os.path.normpath(LOCAL_SAVE_DIR + tarname))
+        except:
+            _print("Error moving {0}: {1}.".format(tarname, e.strerror))
 
     # Quit FTP connection
     if "ftp" in globals() and "HOST" in globals():
@@ -183,8 +192,9 @@ try:
     PORT = config.getint('FTP', 'port')
     LOGIN = config.get('FTP', 'login')
     PASSWD = config.get('FTP', 'passwd')
-    SAVE_DIR = config.get('FTP', 'save_dir')
+    FTP_SAVE_DIR = config.get('FTP', 'save_dir')
     LOCAL_SAVE_ENABLED = config.getboolean('Options', 'local_save_enabled')
+    LOCAL_SAVE_DIR = config.get('Options', 'local_save_dir')
     COMPRESS = config.get('Options', 'compress')
     BACKUP_NAME = config.get('Options', 'backup_name')
     SAVE_LIST = config.get('Options', 'save_list')
@@ -229,7 +239,7 @@ for path in savelist.readlines():
     if path != "\n" and path[0] != ';' and path[0] != '#':
         if something_saved is False:
             if FTP_ENABLED:
-                ftp_connect(HOST, PORT, LOGIN, PASSWD, SAVE_DIR)
+                ftp_connect(HOST, PORT, LOGIN, PASSWD, FTP_SAVE_DIR)
             something_saved = True
         path = path.replace('\n', '')
         if os.path.isdir(path):
@@ -264,4 +274,3 @@ else:
     _print("Nothing to save.")
 
 quit_ezbackup(SUCCESS_CODE)
-
