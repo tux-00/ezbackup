@@ -3,14 +3,20 @@
 
 import os
 import ftplib as ftp
-import ConfigParser
 import sys
 import tarfile
 import smtplib
 from datetime import datetime, timedelta
 from time import time
-from StringIO import StringIO
 
+try:
+    import ConfigParser
+except ImportError:
+    import configparser as ConfigParser
+try:
+    from StringIO import StringIO
+except ImportError:
+    from io import StringIO
 
 # Copy file or dir
 def cp(path):
@@ -121,13 +127,13 @@ def _print(text):
 	global outbuffer
 	
 	# Print text to stdout
-	print text
+	print (text)
 	
 	# Save text in result
 	old_stdout = sys.stdout
 	result = StringIO()
 	sys.stdout = result
-	print text
+	print (text)
 	sys.stdout = old_stdout
 	outbuffer = outbuffer + result.getvalue()
 
