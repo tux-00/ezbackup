@@ -114,9 +114,25 @@ def get_time(_seconds):
 
 
 def quit_ezbackup(exit_code=0):
+    rm_archive()
+    quit_ftp()
+            
+    if "MAIL_STATE" in globals() and "MAIL_FAILS" in globals() and "MAIL_ALWAYS" in globals():
+        if exit_code == ERROR_CODE and (MAIL_STATE == MAIL_FAILS or MAIL_STATE == MAIL_ALWAYS):
+            mail(MAIL_SENDER, MAIL_RECEIVERS, "EZBackup Fails", outbuffer)
+        elif exit_code == SUCCESS_CODE and MAIL_STATE == MAIL_ALWAYS:
+            mail(MAIL_SENDER, MAIL_RECEIVERS, "EZBackup Stats", outbuffer)
+    else:
+        _print("Error trying to send mail. No configuration found.")
+
+    exit(exit_code)
+
+# Remove archive
+
+
+def rm_archive():
     global LOCAL_SAVE_DIR
 
-    # Remove archive if exist
     if "tarname" in globals() and os.path.isfile(tarname) and LOCAL_SAVE_ENABLED is False:
         os.remove(tarname)
     elif LOCAL_SAVE_ENABLED and LOCAL_SAVE_DIR != "." and LOCAL_SAVE_DIR != "./" and os.path.exists(LOCAL_SAVE_DIR):
@@ -127,24 +143,16 @@ def quit_ezbackup(exit_code=0):
         except:
             _print("Error moving {0}: {1}.".format(tarname, e.strerror))
 
-    # Quit FTP connection
+# Quit FTP connection
+
+
+def quit_ftp():
     if "ftp" in globals() and "HOST" in globals():
         try:
             ftp.quit()
             _print("\nConnection to {0} closed.".format(HOST))
         except:
             pass
-
-    # Send email if configured
-    if "MAIL_STATE" in globals() and "MAIL_FAILS" in globals() and "MAIL_ALWAYS" in globals():
-        if exit_code == ERROR_CODE and (MAIL_STATE == MAIL_FAILS or MAIL_STATE == MAIL_ALWAYS):
-            mail(MAIL_SENDER, MAIL_RECEIVERS, "EZBackup Fail", outbuffer)
-        elif exit_code == SUCCESS_CODE and MAIL_STATE == MAIL_ALWAYS:
-            mail(MAIL_SENDER, MAIL_RECEIVERS, "EZBackup Stats", outbuffer)
-    else:
-        _print("Error trying to send mail. No configuration loaded.")
-
-    exit(exit_code)
 
 # Print text to stdout and save value in result
 
