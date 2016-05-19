@@ -1,10 +1,12 @@
 ezbackup
 ========
 
-Save a list of files and dirs into a tarball archive and move it to an FTP server. Run summary can be sent by mail.
+[![Code Climate](https://codeclimate.com/github/tux-00/ezbackup/badges/gpa.svg)](https://codeclimate.com/github/tux-00/ezbackup)
+
+Save a list of files/dirs into a tarball archive and move it to local storage or FTP server. Run summary can be sent by mail.
 
 ## Dependencies
-ezbackup simply works with python2.7/3.4 and **no dependencies**.
+ezbackup simply works with python2 or python3, **no dependencies**.
 
 ## Usage
 - ezbackup.conf : configure informations of FTP connection and some various options for ezbackup
