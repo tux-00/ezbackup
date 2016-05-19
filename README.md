@@ -1,6 +1,8 @@
 ezbackup
 ========
 
+[![Code Climate](https://codeclimate.com/github/tux-00/ezbackup/badges/gpa.svg)](https://codeclimate.com/github/tux-00/ezbackup)
+
 Save a list of files/dirs into a tarball archive and move it to local storage or FTP server. Run summary can be sent by mail.
 
 ## Dependencies
