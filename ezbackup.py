@@ -117,10 +117,9 @@ def quit_ezbackup(exit_code=0):
     rm_archive()
     quit_ftp()
             
-    if "MAIL_STATE" in globals() and "MAIL_FAILS" in globals() and "MAIL_ALWAYS" in globals():
-        if exit_code == ERROR_CODE and (MAIL_STATE == MAIL_FAILS or MAIL_STATE == MAIL_ALWAYS):
+    if exit_code == ERROR_CODE and (MAIL_STATE == MAIL_FAILS or MAIL_STATE == MAIL_ALWAYS):
             mail(MAIL_SENDER, MAIL_RECEIVERS, "EZBackup Fails", outbuffer)
-        elif exit_code == SUCCESS_CODE and MAIL_STATE == MAIL_ALWAYS:
+    elif exit_code == SUCCESS_CODE and MAIL_STATE == MAIL_ALWAYS:
             mail(MAIL_SENDER, MAIL_RECEIVERS, "EZBackup Stats", outbuffer)
     else:
         _print("Error trying to send mail. No configuration found.")
@@ -147,7 +146,7 @@ def rm_archive():
 
 
 def quit_ftp():
-    if "ftp" in globals() and "HOST" in globals():
+    if "ftp" in globals():
         try:
             ftp.quit()
             _print("\nConnection to {0} closed.".format(HOST))
